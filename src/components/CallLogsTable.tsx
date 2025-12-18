@@ -9,6 +9,24 @@ interface CallLogsTableProps {
 
 export default function CallLogsTable({ logs }: CallLogsTableProps) {
   const [selectedLog, setSelectedLog] = useState<CallLog | null>(null);
+  
+  // Sort logs by newest first
+  // Sort logs by newest entry (ID) first, then by date
+  const sortedLogs = [...logs].sort((a, b) => {
+     // If both have IDs, sort by ID descending (Creation Order)
+     if (a.id && b.id) {
+        // Try numeric comparison first
+        const idA = Number(a.id);
+        const idB = Number(b.id);
+        if (!isNaN(idA) && !isNaN(idB)) {
+          return idB - idA;
+        }
+        // Fallback to string comparison (e.g. for MongoDB ObjectIDs)
+        return String(b.id).localeCompare(String(a.id));
+     }
+     // Fallback to Date if IDs are missing
+     return new Date(b.call_datetime).getTime() - new Date(a.call_datetime).getTime();
+  });
 
   const getScoreBadgeColor = (rawScore: string | number) => {
     const score = parseSopScore(rawScore);
@@ -52,13 +70,20 @@ export default function CallLogsTable({ logs }: CallLogsTableProps) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {logs.map((log, index) => (
+              {sortedLogs.map((log, index) => (
                 <tr
                   key={index}
                   className="hover:bg-gray-50 transition"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {new Date(log.call_datetime).toLocaleDateString()}
+                    {new Date(log.call_datetime).toLocaleString('en-IN', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: true
+                    })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">

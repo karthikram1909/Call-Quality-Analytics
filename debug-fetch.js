@@ -22,12 +22,13 @@ async function fetchData() {
             console.log('Is Array?', Array.isArray(json));
             if (Array.isArray(json)) {
                 console.log('Item count:', json.length);
-                if (json.length > 0) console.log('First item:', json[0]);
+                if (json.length > 0) console.log('First item:', JSON.stringify(json[0], null, 2));
             } else {
                 console.log('Keys:', Object.keys(json));
                 if (json.data) {
                     console.log('json.data type:', Array.isArray(json.data) ? 'Array' : typeof json.data);
                     console.log('json.data length:', json.data.length);
+                    if (json.data.length > 0) console.log('First item keys:', Object.keys(json.data[0]));
                 }
             }
         } catch (e) {
