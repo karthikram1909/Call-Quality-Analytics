@@ -16,30 +16,24 @@ interface FetchCallLogsParams {
 
 export const fetchCallLogs = async (params?: FetchCallLogsParams): Promise<CallLog[]> => {
   try {
-    let url = BASE_URL;
-
+    const urlObj = new URL(BASE_URL, window.location.origin);
     if (params) {
-      const queryParams = new URLSearchParams();
-      if (params.date) queryParams.append('date', params.date);
-      if (params.staff_name) queryParams.append('staff_name', params.staff_name);
-      if (params.sop_score !== undefined) queryParams.append('sop_score', params.sop_score.toString());
-
-      const queryString = queryParams.toString();
-      if (queryString) {
-        url += `?${queryString}`;
-      }
+      if (params.date) urlObj.searchParams.append('date', params.date);
+      if (params.staff_name) urlObj.searchParams.append('staff_name', params.staff_name);
+      if (params.sop_score !== undefined) urlObj.searchParams.append('sop_score', params.sop_score.toString());
     }
+    urlObj.searchParams.append('_t', Date.now().toString());
 
-    const response = await fetch(url);
+    const response = await fetch(urlObj.toString());
     if (!response.ok) {
-      throw new Error('Failed to fetch call logs');
+      throw new Error(`Failed to fetch call logs: ${response.status} ${response.statusText}`);
     }
 
     const json = await response.json();
     return Array.isArray(json) ? json : (json.data || []);
   } catch (error) {
     console.error('Error fetching call logs:', error);
-    return [];
+    throw error;
   }
 };
 

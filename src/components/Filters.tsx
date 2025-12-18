@@ -1,20 +1,24 @@
 import { Search, Filter } from 'lucide-react';
 
 interface FiltersProps {
-  date: string;
+  fromDate: string;
+  toDate: string;
   staffName: string;
   sopScore: string;
-  onDateChange: (date: string) => void;
+  onFromDateChange: (date: string) => void;
+  onToDateChange: (date: string) => void;
   onStaffNameChange: (name: string) => void;
   onSopScoreChange: (score: string) => void;
   onReset: () => void;
 }
 
 export default function Filters({
-  date,
+  fromDate,
+  toDate,
   staffName,
   sopScore,
-  onDateChange,
+  onFromDateChange,
+  onToDateChange,
   onStaffNameChange,
   onSopScoreChange,
   onReset,
@@ -26,15 +30,27 @@ export default function Filters({
         <h2 className="text-lg font-semibold text-gray-800">Filters</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Date
+            From Date
           </label>
           <input
             type="date"
-            value={date}
-            onChange={(e) => onDateChange(e.target.value)}
+            value={fromDate}
+            onChange={(e) => onFromDateChange(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            To Date
+          </label>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => onToDateChange(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
           />
         </div>

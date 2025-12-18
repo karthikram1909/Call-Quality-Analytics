@@ -1,11 +1,15 @@
-import { Table } from 'lucide-react';
+import { useState } from 'react';
+import { Table, Eye } from 'lucide-react';
 import { CallLog, parseSopScore } from '../services/callLogsService';
+import CallSummaryModal from './CallSummaryModal';
 
 interface CallLogsTableProps {
   logs: CallLog[];
 }
 
 export default function CallLogsTable({ logs }: CallLogsTableProps) {
+  const [selectedLog, setSelectedLog] = useState<CallLog | null>(null);
+
   const getScoreBadgeColor = (rawScore: string | number) => {
     const score = parseSopScore(rawScore);
     if (score >= 8) return 'bg-green-100 text-green-800 border-green-200';
@@ -42,6 +46,9 @@ export default function CallLogsTable({ logs }: CallLogsTableProps) {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   SOP Score
                 </th>
+                <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -72,12 +79,28 @@ export default function CallLogsTable({ logs }: CallLogsTableProps) {
                       {typeof log.sop_score === 'number' ? `${log.sop_score}/10` : log.sop_score}
                     </span>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <button
+                      onClick={() => setSelectedLog(log)}
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition"
+                      title="View Details"
+                    >
+                      <Eye className="w-5 h-5" />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {selectedLog && (
+        <CallSummaryModal
+          log={selectedLog}
+          onClose={() => setSelectedLog(null)}
+        />
+      )}
     </div>
   );
 }

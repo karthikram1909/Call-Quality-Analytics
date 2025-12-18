@@ -12,12 +12,15 @@ import { BarChart3 } from 'lucide-react';
 import { CallLog, parseSopScore } from '../services/callLogsService';
 
 interface SopScoreChartProps {
-  todayLogs: CallLog[];
+  logs: CallLog[];
 }
 
-export default function SopScoreChart({ todayLogs }: SopScoreChartProps) {
+export default function SopScoreChart({ logs }: SopScoreChartProps) {
   // Aggregate scores by staff
-  const staffPerformance = todayLogs.reduce((acc, log) => {
+  const staffPerformance = logs.reduce((acc, log) => {
+    const scoreStr = String(log.sop_score).toUpperCase();
+    if (scoreStr === 'N/A' || scoreStr === 'NA') return acc;
+
     if (!acc[log.staff_name]) {
       acc[log.staff_name] = { total: 0, count: 0 };
     }
@@ -46,7 +49,7 @@ export default function SopScoreChart({ todayLogs }: SopScoreChartProps) {
       <div className="flex items-center gap-2 mb-6">
         <BarChart3 className="w-5 h-5 text-blue-600" />
         <h2 className="text-lg font-semibold text-gray-800">
-          Today's Average SOP Score
+          Average SOP Score
         </h2>
       </div>
 

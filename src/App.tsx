@@ -4,28 +4,32 @@ import Filters from './components/Filters';
 import AnalyticsCards from './components/AnalyticsCards';
 import SopScoreChart from './components/SopScoreChart';
 import CallLogsTable from './components/CallLogsTable';
-import { fetchCallLogs, getTodayString, CallLog, parseSopScore } from './services/callLogsService';
+import { fetchCallLogs, CallLog, parseSopScore } from './services/callLogsService';
 
 function App() {
   const [allLogs, setAllLogs] = useState<CallLog[]>([]);
-  const [filteredLogs, setFilteredLogs] = useState<CallLog[]>([]);
-  const [todayLogs, setTodayLogs] = useState<CallLog[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const [dateFilter, setDateFilter] = useState('');
+  const [filteredLogs, setFilteredLogs] = useState<CallLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [staffNameFilter, setStaffNameFilter] = useState('');
   const [sopScoreFilter, setSopScoreFilter] = useState('');
 
   const loadCallLogs = async () => {
     setLoading(true);
-    const logs = await fetchCallLogs();
-    setAllLogs(logs);
-    setFilteredLogs(logs);
-
-    const today = getTodayString();
-    const todayData = logs.filter(log => log.call_datetime.startsWith(today));
-    setTodayLogs(todayData);
-    setLoading(false);
+    setError(null);
+    try {
+      const logs = await fetchCallLogs();
+      setAllLogs(logs);
+      setFilteredLogs(logs);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load call logs');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -36,8 +40,18 @@ function App() {
     const applyFilters = () => {
       let filtered = [...allLogs];
 
-      if (dateFilter) {
-        filtered = filtered.filter((log) => log.call_datetime.startsWith(dateFilter));
+      if (fromDate) {
+        filtered = filtered.filter((log) => {
+          const logDate = log.call_datetime.split('T')[0];
+          return logDate >= fromDate;
+        });
+      }
+
+      if (toDate) {
+        filtered = filtered.filter((log) => {
+          const logDate = log.call_datetime.split('T')[0];
+          return logDate <= toDate;
+        });
       }
 
       if (staffNameFilter) {
@@ -48,18 +62,21 @@ function App() {
       }
 
       if (sopScoreFilter) {
-        const score = parseInt(sopScoreFilter);
-        filtered = filtered.filter((log) => Math.floor(parseSopScore(log.sop_score)) === score);
+        filtered = filtered.filter((log) => {
+          const score = parseSopScore(log.sop_score);
+          return score.toString().includes(sopScoreFilter);
+        });
       }
 
       setFilteredLogs(filtered);
     };
 
     applyFilters();
-  }, [dateFilter, staffNameFilter, sopScoreFilter, allLogs]);
+  }, [fromDate, toDate, staffNameFilter, sopScoreFilter, allLogs]);
 
   const handleReset = () => {
-    setDateFilter('');
+    setFromDate('');
+    setToDate('');
     setStaffNameFilter('');
     setSopScoreFilter('');
     setFilteredLogs(allLogs);
@@ -77,6 +94,7 @@ function App() {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Call Quality Analytics</h1>
                 <p className="text-gray-500 mt-1">Monitor and analyze call performance</p>
+                <p className="text-xs text-gray-400">Debug: All: {allLogs.length} | Filt: {filteredLogs.length} | First: {allLogs[0]?.call_datetime}</p>
               </div>
             </div>
             <button
@@ -92,7 +110,20 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {loading ? (
+        {error ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center text-red-600 bg-red-50 p-8 rounded-lg shadow-sm">
+              <p className="text-lg font-semibold mb-2">Error Loading Data</p>
+              <p>{error}</p>
+              <button
+                onClick={loadCallLogs}
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        ) : loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <RefreshCw className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
@@ -102,20 +133,24 @@ function App() {
         ) : (
           <div className="space-y-6">
             <Filters
-              date={dateFilter}
+              fromDate={fromDate}
+              toDate={toDate}
               staffName={staffNameFilter}
               sopScore={sopScoreFilter}
-              onDateChange={setDateFilter}
+              onFromDateChange={setFromDate}
+              onToDateChange={setToDate}
               onStaffNameChange={setStaffNameFilter}
               onSopScoreChange={setSopScoreFilter}
               onReset={handleReset}
             />
 
-            <AnalyticsCards todayLogs={todayLogs} />
+            <AnalyticsCards logs={filteredLogs} />
 
-            <SopScoreChart todayLogs={todayLogs} />
+            <SopScoreChart logs={filteredLogs} />
 
             <CallLogsTable logs={filteredLogs} />
+
+
           </div>
         )}
       </main>

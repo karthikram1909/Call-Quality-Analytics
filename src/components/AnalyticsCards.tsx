@@ -1,29 +1,35 @@
 import { TrendingUp, TrendingDown, Award } from 'lucide-react';
-import { CallLog } from '../services/callLogsService';
+import { CallLog, parseSopScore } from '../services/callLogsService';
 
 interface AnalyticsCardsProps {
-  todayLogs: CallLog[];
+  logs: CallLog[];
 }
 
-export default function AnalyticsCards({ todayLogs }: AnalyticsCardsProps) {
+export default function AnalyticsCards({ logs }: AnalyticsCardsProps) {
+  // Filter out N/A scores
+  const validLogs = logs.filter(log => {
+    const score = String(log.sop_score).toUpperCase();
+    return score !== 'N/A' && score !== 'NA';
+  });
+
   const getTopScorer = () => {
-    if (todayLogs.length === 0) return null;
-    return todayLogs.reduce((max, log) =>
-      log.sop_score > max.sop_score ? log : max
+    if (validLogs.length === 0) return null;
+    return validLogs.reduce((max, log) =>
+      parseSopScore(log.sop_score) > parseSopScore(max.sop_score) ? log : max
     );
   };
 
   const getLowestScorer = () => {
-    if (todayLogs.length === 0) return null;
-    return todayLogs.reduce((min, log) =>
-      log.sop_score < min.sop_score ? log : min
+    if (validLogs.length === 0) return null;
+    return validLogs.reduce((min, log) =>
+      parseSopScore(log.sop_score) < parseSopScore(min.sop_score) ? log : min
     );
   };
 
   const getAverageScore = () => {
-    if (todayLogs.length === 0) return 0;
-    const sum = todayLogs.reduce((acc, log) => acc + log.sop_score, 0);
-    return (sum / todayLogs.length).toFixed(1);
+    if (validLogs.length === 0) return 0;
+    const sum = validLogs.reduce((acc, log) => acc + parseSopScore(log.sop_score), 0);
+    return (sum / validLogs.length).toFixed(1);
   };
 
   const topScorer = getTopScorer();
@@ -37,7 +43,7 @@ export default function AnalyticsCards({ todayLogs }: AnalyticsCardsProps) {
           <div className="bg-green-500 p-3 rounded-lg">
             <TrendingUp className="w-6 h-6 text-white" />
           </div>
-          <span className="text-sm font-medium text-green-700">Highest Today</span>
+          <span className="text-sm font-medium text-green-700">Highest Score</span>
         </div>
         {topScorer ? (
           <>
@@ -58,7 +64,7 @@ export default function AnalyticsCards({ todayLogs }: AnalyticsCardsProps) {
           <div className="bg-red-500 p-3 rounded-lg">
             <TrendingDown className="w-6 h-6 text-white" />
           </div>
-          <span className="text-sm font-medium text-red-700">Lowest Today</span>
+          <span className="text-sm font-medium text-red-700">Lowest Score</span>
         </div>
         {lowestScorer ? (
           <>
@@ -70,7 +76,7 @@ export default function AnalyticsCards({ todayLogs }: AnalyticsCardsProps) {
             </p>
           </>
         ) : (
-          <p className="text-gray-500">No data for today</p>
+          <p className="text-gray-500">No data available</p>
         )}
       </div>
 
@@ -79,7 +85,7 @@ export default function AnalyticsCards({ todayLogs }: AnalyticsCardsProps) {
           <div className="bg-blue-500 p-3 rounded-lg">
             <Award className="w-6 h-6 text-white" />
           </div>
-          <span className="text-sm font-medium text-blue-700">Average Today</span>
+          <span className="text-sm font-medium text-blue-700">Average Score</span>
         </div>
         <h3 className="text-2xl font-bold text-gray-800 mb-1">
           Team Performance
