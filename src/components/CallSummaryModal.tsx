@@ -29,7 +29,14 @@ export default function CallSummaryModal({ log, onClose }: CallSummaryModalProps
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-500 mb-1">Date Time</p>
               <p className="font-medium text-gray-900">
-                {new Date(log.call_datetime).toLocaleString('en-IN')}
+                {new Date(log.call_datetime).toLocaleString('en-IN', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                })}
               </p>
             </div>
           </div>
