@@ -7,46 +7,58 @@ interface AnalyticsCardsProps {
 }
 
 export default function AnalyticsCards({ logs }: AnalyticsCardsProps) {
-  const [activeTab, setActiveTab] = useState<'new' | 'service'>('new');
+  const [activeTab, setActiveTab] = useState<'all' | 'new' | 'service'>('all');
 
   // Filter logs by type and valid score
-  const getFilteredLogs = (type: 'new' | 'service') => {
+  const getFilteredLogs = (type: 'all' | 'new' | 'service') => {
     return logs.filter(log => {
       const score = String(log.sop_score);
       if (score.toUpperCase() === 'N/A' || score.toUpperCase() === 'NA') return false;
       
-      if (type === 'new') return score.includes('/16');
-      if (type === 'service') return score.includes('/13');
+      const parts = score.split('/');
+      if (parts.length === 2) {
+        const denominator = parts[1].trim();
+        if (type === 'all') return true;
+        if (type === 'new') return denominator === '16';
+        if (type === 'service') return denominator === '13';
+      }
       return false;
     });
   };
 
   const currentLogs = getFilteredLogs(activeTab);
-  const maxScore = activeTab === 'new' ? 16 : 13;
-
-  const getScoreValue = (scoreStr: string | number) => {
-    if (typeof scoreStr === 'number') return scoreStr;
-    const parts = scoreStr.split('/');
-    return parts.length > 0 ? parseFloat(parts[0]) : 0;
+  
+  const getPercentage = (scoreStr: string | number) => {
+    if (typeof scoreStr === 'number') return 0;
+    const parts = String(scoreStr).split('/');
+    if (parts.length === 2) {
+      const num = parseFloat(parts[0].trim());
+      const den = parseFloat(parts[1].trim());
+      if (den === 0) return 0;
+      return (num / den) * 100;
+    }
+    return 0;
   };
+
+
 
   const getTopScorer = () => {
     if (currentLogs.length === 0) return null;
     return currentLogs.reduce((max, log) =>
-      getScoreValue(log.sop_score) > getScoreValue(max.sop_score) ? log : max
+      getPercentage(log.sop_score) > getPercentage(max.sop_score) ? log : max
     );
   };
 
   const getLowestScorer = () => {
     if (currentLogs.length === 0) return null;
     return currentLogs.reduce((min, log) =>
-      getScoreValue(log.sop_score) < getScoreValue(min.sop_score) ? log : min
+      getPercentage(log.sop_score) < getPercentage(min.sop_score) ? log : min
     );
   };
 
   const getAverageScore = () => {
     if (currentLogs.length === 0) return 0;
-    const sum = currentLogs.reduce((acc, log) => acc + getScoreValue(log.sop_score), 0);
+    const sum = currentLogs.reduce((acc, log) => acc + getPercentage(log.sop_score), 0);
     return (sum / currentLogs.length).toFixed(1);
   };
 
@@ -57,6 +69,16 @@ export default function AnalyticsCards({ logs }: AnalyticsCardsProps) {
   return (
     <div className="space-y-6">
       <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+        <button
+          onClick={() => setActiveTab('all')}
+          className={`px-4 py-2 text-sm font-medium rounded-md transition ${
+            activeTab === 'all'
+              ? 'bg-white text-blue-600 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          All Calls
+        </button>
         <button
           onClick={() => setActiveTab('new')}
           className={`px-4 py-2 text-sm font-medium rounded-md transition ${
@@ -133,7 +155,10 @@ export default function AnalyticsCards({ logs }: AnalyticsCardsProps) {
             Team Performance
           </h3>
           <p className="text-3xl font-bold text-blue-600">
-            {averageScore}/{maxScore}
+            {activeTab === 'all' 
+              ? `${averageScore}%`
+              : `${averageScore}/${activeTab === 'new' ? 16 : 13}`
+            }
           </p>
         </div>
       </div>

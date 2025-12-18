@@ -29,7 +29,7 @@ export default function CallSummaryModal({ log, onClose }: CallSummaryModalProps
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-500 mb-1">Date Time</p>
               <p className="font-medium text-gray-900">
-                {new Date(log.call_datetime).toLocaleString()}
+                {new Date(log.call_datetime).toLocaleString('en-IN')}
               </p>
             </div>
           </div>
@@ -49,7 +49,7 @@ export default function CallSummaryModal({ log, onClose }: CallSummaryModalProps
             <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Call Details</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Object.entries(log)
-                .filter(([key]) => !['id', 'staff_name', 'call_datetime', 'sop_score'].includes(key))
+                .filter(([key]) => !['id', 'staff_name', 'call_datetime', 'sop_score', 'customer_number'].includes(key))
                 .map(([key, value]) => (
                   <div key={key} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">

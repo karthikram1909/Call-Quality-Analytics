@@ -13,8 +13,14 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [fromDate, setFromDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  const [toDate, setToDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
   const [staffNameFilter, setStaffNameFilter] = useState('');
   const [sopScoreFilter, setSopScoreFilter] = useState('');
 
@@ -42,14 +48,16 @@ function App() {
 
       if (fromDate) {
         filtered = filtered.filter((log) => {
-          const logDate = log.call_datetime.split('T')[0];
+          const logDateObj = new Date(log.call_datetime);
+          const logDate = `${logDateObj.getFullYear()}-${String(logDateObj.getMonth() + 1).padStart(2, '0')}-${String(logDateObj.getDate()).padStart(2, '0')}`;
           return logDate >= fromDate;
         });
       }
 
       if (toDate) {
         filtered = filtered.filter((log) => {
-          const logDate = log.call_datetime.split('T')[0];
+          const logDateObj = new Date(log.call_datetime);
+          const logDate = `${logDateObj.getFullYear()}-${String(logDateObj.getMonth() + 1).padStart(2, '0')}-${String(logDateObj.getDate()).padStart(2, '0')}`;
           return logDate <= toDate;
         });
       }
