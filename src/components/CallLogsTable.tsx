@@ -71,12 +71,8 @@ export default function CallLogsTable({ logs }: CallLogsTableProps) {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getScoreBadgeColor(
-                        log.sop_score
-                      )}`}
-                    >
-                      {typeof log.sop_score === 'number' ? `${log.sop_score}/10` : log.sop_score}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getScoreBadgeColor(log.sop_score)}`}>
+                      {log.sop_score}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
