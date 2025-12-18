@@ -24,7 +24,11 @@ export const fetchCallLogs = async (params?: FetchCallLogsParams): Promise<CallL
     }
     urlObj.searchParams.append('_t', Date.now().toString());
 
-    const response = await fetch(urlObj.toString());
+    const response = await fetch(urlObj.toString(), {
+      headers: {
+        'x-api-key': import.meta.env.VITE_API_KEY
+      }
+    });
     if (!response.ok) {
       throw new Error(`Failed to fetch call logs: ${response.status} ${response.statusText}`);
     }

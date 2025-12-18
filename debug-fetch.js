@@ -5,7 +5,11 @@ console.log('Fetching from:', url);
 
 async function fetchData() {
     try {
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: {
+                'x-api-key': '0297e443f25d40ac1f1484942aee0d16f54f70bb8117c32682c539bfcdfe8145'
+            }
+        });
         console.log('Status:', response.status);
         console.log('Status Text:', response.statusText);
 
